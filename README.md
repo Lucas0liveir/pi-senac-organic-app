@@ -68,6 +68,9 @@ Aplicativo para conectar as cooperativas de produtores de alimentos orgânicos d
 
 ![c64b3ff5-6a21-4f3e-9a91-ea3e4ee3ac75](https://github.com/neodamico/senac_pti/assets/143230275/cd594869-b90d-4afc-93d8-4b8adbdbfd16)
 
+### Download do apk
+[v1.0.0](https://github.com/Lucas0liveir/pi-senac-organic-app/releases/tag/release)
+
 ### Ferramentas utilizadas no projeto
 - [Node](https://nodejs.org/)
 - [React Native](https://reactnative.dev/)
