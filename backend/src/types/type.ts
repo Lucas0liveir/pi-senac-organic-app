@@ -6,8 +6,18 @@ export type UserModel = {
 };
 
 export type UserResponseModel = {
-  id?: string;
-  nome: string;
+  id: string;
+  nome?: string;
   email: string;
-  cpf: string;
+  cpf?: string;
+};
+
+export type AddressModel = {
+  cep: string;
+  logradouro: string;
+  numero?: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
 };

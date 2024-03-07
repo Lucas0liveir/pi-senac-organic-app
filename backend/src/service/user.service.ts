@@ -12,8 +12,9 @@ import jwt from "jsonwebtoken";
 const secretJWT = process.env.JWT_SECRET_KEY || "";
 
 class UserService {
-  getById(user_id: string) {
-    return UserRepository.getById(user_id);
+  getById(userId: string) {
+    this.checkUserExists(userId);
+    return UserRepository.getById(userId);
   }
   getByEmail(email: string) {
     return UserRepository.getByEmail(email);
@@ -44,21 +45,30 @@ class UserService {
 
     const authentication = await bcrypt.compare(senha, user.senha);
 
-    if (authentication) {
-      return jwt.sign({ _id: user.id, email: user.email }, secretJWT, {
-        expiresIn: "1h",
-      });
+    if (!authentication) {
+      throw new UnauthorizedError("Authentication failed!");
     }
 
-    throw new UnauthorizedError("Authentication failed!");
+    return jwt.sign({ _id: user.id, email: user.email }, secretJWT, {
+      expiresIn: "1h",
+    });
   }
 
-  update(user_id: string, user: Partial<typeof User>) {
-    return UserRepository.update(user_id, user);
+  async update(userId: string, user: Partial<typeof User>) {
+    this.checkUserExists(userId);
+    const userUpdated = await UserRepository.update(userId, user);
+    return userUpdated;
   }
 
-  delete(user_id: string) {
-    return UserRepository.delete(user_id);
+  delete(userId: string) {
+    return UserRepository.delete(userId);
+  }
+
+  private async checkUserExists(userId: string) {
+    const existingUser = await UserRepository.getById(userId);
+    if (!existingUser) {
+      throw new NotFoundError("User not found!");
+    }
   }
 }
 

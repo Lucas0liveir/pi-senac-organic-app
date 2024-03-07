@@ -1,24 +1,24 @@
 import { IUser, User } from "./../models/user.model";
 
 class UserRepository {
-  getById(user_id: string) {
-    return User.findById(user_id);
+  async getById(userId: string) {
+    return await User.findById(userId);
   }
 
-  getByEmail(email: string) {
-    return User.findOne({ email });
+  async getByEmail(email: string) {
+    return await User.findOne({ email }).select("+senha");
   }
 
-  create(user: IUser) {
-    return User.create(user);
+  async create(user: IUser) {
+    return await User.create(user);
   }
 
-  update(user_id: string, user: Partial<typeof User>) {
-    return User.findByIdAndUpdate(user_id, user);
+  async update(userId: string, user: Partial<typeof User>) {
+    return await User.findByIdAndUpdate(userId, user);
   }
 
-  delete(user_id: string) {
-    return User.findByIdAndDelete(user_id);
+  delete(userId: string) {
+    return User.findByIdAndDelete(userId);
   }
 }
 
