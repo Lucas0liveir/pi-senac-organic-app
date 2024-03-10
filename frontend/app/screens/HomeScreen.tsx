@@ -10,6 +10,7 @@ import { products } from "app/utils/products"
 import { ProductModel } from "app/models/CartStore"
 import { useNavigation } from "@react-navigation/native"
 import { GoogleSignin } from "@react-native-google-signin/google-signin"
+import { CardSubs } from "app/components/CardSubs"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "app/models"
 
@@ -17,7 +18,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin"
 
 export const HomeScreen: FC<any> = observer(function HomeScreen() {
 
-  const { authenticationStore: { logout, nome }, cartStore } = useStores()
+  const { authenticationStore: { logout, user }, cartStore } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<any>()
   const productsToGrid = useMemo(() => {
@@ -44,7 +45,7 @@ export const HomeScreen: FC<any> = observer(function HomeScreen() {
       })
 
       cartStore.addToCart(productModel)
-    } 
+    }
     navigation.navigate("Carrinho")
   }
   return (
@@ -52,11 +53,11 @@ export const HomeScreen: FC<any> = observer(function HomeScreen() {
       <Header
         titleStyle={{ color: "#fff", fontWeight: "bold" }}
         style={{ paddingHorizontal: spacing.md, backgroundColor: colors.palette.green100 }}
-        title={"Olá, " + nome} RightActionComponent={<Icon onPress={() => {
-          GoogleSignin.signOut().then(logout)
+        title={"Olá, " + user.nome} RightActionComponent={<Icon onPress={() => {
+          GoogleSignin.signOut().finally(logout)
         }} color={"#fff"} size={26} type="ant-design" name="logout" />} />
       <Screen contentContainerStyle={{ paddingBottom: spacing.xxl }} style={$root} preset="scroll">
-
+        <CardSubs />
         {productsToGrid.map((item, index) => {
           return (
             <View key={index} style={{ flexDirection: "row" }}>
@@ -65,6 +66,7 @@ export const HomeScreen: FC<any> = observer(function HomeScreen() {
                   key={index}
                   onPress={() => handleAddToCart(p)}
                   desc={p.desc}
+                  rawPrice={p.price}
                   price={Number(p.price).toLocaleString("pt-br", { currency: "BRL", style: "currency" })}
                   uri={p.uri}
                 />

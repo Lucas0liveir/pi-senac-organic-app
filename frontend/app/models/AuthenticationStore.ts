@@ -1,4 +1,6 @@
+import { ApiUserResponse, User } from "app/services/api"
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 
 export const AuthenticationStoreModel = types
   .model("AuthenticationStore")
@@ -6,10 +8,12 @@ export const AuthenticationStoreModel = types
     authToken: types.maybe(types.string),
     nome: types.maybe(types.string),
     authEmail: types.maybe(types.string),
+    user: types.frozen<ApiUserResponse>(),
+    cashBack: types.maybe(types.number)
   })
   .views((store) => ({
     get isAuthenticated() {
-      return !!store.authEmail
+      return !!store.authToken
     },
     get validationError() {
       if (store.authEmail?.length === 0) return "can't be blank"
@@ -19,6 +23,7 @@ export const AuthenticationStoreModel = types
       return ""
     },
   }))
+  .actions(withSetPropAction)
   .actions((store) => ({
     setAuthToken(value?: string) {
       store.authToken = value

@@ -11,12 +11,16 @@ import { useStores } from "app/models"
 import { OrderModel } from "app/models/OrdersModel"
 import { gerarIdPedido } from "app/utils/gerarId"
 import { ProductModel } from "app/models/CartStore"
+import { useStripe } from "@stripe/stripe-react-native"
+import { api } from "app/services/api"
+import { Alert } from "react-native"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "app/models"
 
 
 export const PaymentScreen: FC<any> = observer(function PaymentScreen() {
-  const { listCardStoreModel, cartStore, ordersStoreModel } = useStores()
+  const { listCardStoreModel, cartStore, ordersStoreModel, authenticationStore: { user, authToken, setProp, cashBack } } = useStores()
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { width, height } = Dimensions.get("window")
   const [i, setIndex] = useState(0)
 
@@ -38,6 +42,71 @@ export const PaymentScreen: FC<any> = observer(function PaymentScreen() {
       useNativeDriver: true
     }).start()
   }, [])
+
+  const fetchPaymentParams = async () => {
+    const products = JSON.parse(JSON.stringify(cartStore.products)).map(item => ProductModel.create({
+      ...item
+    }))
+
+    const order = OrderModel.create({
+      id: gerarIdPedido(),
+      items: products
+    })
+
+    const total = products.reduce((acc: number, item: any) => {
+      return acc += item.price + item.qtde
+    }, 0)
+
+    console.log("total", total);
+
+    const res = await api.createPayment(user.customerId, total, authToken)
+
+    if (res.kind === "ok") {
+      const { payment: { ephemeralkey, paymentIntent } } = res
+
+      const { error } = await initPaymentSheet({
+        merchantDisplayName: "Organic App",
+        customerId: user?.customerId,
+        customerEphemeralKeySecret: ephemeralkey,
+        paymentIntentClientSecret: paymentIntent,
+        // Set `allowsDelayedPaymentMethods` to true if your business can handle payment
+        //methods that complete payment after a delay, like SEPA Debit and Sofort.
+        allowsDelayedPaymentMethods: true,
+        defaultBillingDetails: {
+          name: user.nome
+        }
+      });
+      openPaymentSheet()
+    }
+
+
+  }
+
+  const openPaymentSheet = async () => {
+    const products = JSON.parse(JSON.stringify(cartStore.products)).map(item => ProductModel.create({
+      ...item
+    }))
+
+    const total = (products.reduce((acc: number, item: any) => {
+      return acc += item.price + item.qtde
+    }, 0) * 0.05) + (cashBack ?? 0)
+
+    const order = OrderModel.create({
+      id: gerarIdPedido(),
+      items: products
+    })
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      setProp("cashBack", total)
+      ordersStoreModel.add(order)
+
+      cartStore.purchaseClose()
+      navigation.navigate("ConfirmPurchase", { cashBack: total })
+    }
+  };
 
   return (
     <>
@@ -164,26 +233,7 @@ export const PaymentScreen: FC<any> = observer(function PaymentScreen() {
 
         </View>
         <View style={{ height: height / 2, justifyContent: "flex-end" }}>
-          <TouchableWithoutFeedback onPress={() => {
-            if (listCardStoreModel.list.length) {
-              const products = JSON.parse(JSON.stringify(cartStore.products)).map(item => ProductModel.create({
-                ...item
-              }))
-
-              const order = OrderModel.create({
-                id: gerarIdPedido(),
-                items: products
-              })
-
-              ordersStoreModel.add(order)
-
-              cartStore.purchaseClose()
-              navigation.navigate("ConfirmPurchase")
-            } else {
-              navigation.navigate("Payment")
-            }
-          }
-          }>
+          <TouchableWithoutFeedback onPress={fetchPaymentParams}>
             <View style={$tapButton}>
               <View style={{ width: "65%", justifyContent: "flex-end", alignItems: "flex-end" }}>
                 <Text style={{ color: "#fff" }} text="Fazer Pedido" />

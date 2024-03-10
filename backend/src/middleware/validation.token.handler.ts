@@ -30,6 +30,8 @@ const validateToken = asyncHandler(
         }
 
         req.body = { ...req.body, user_id_validate: decoded._id };
+        //@ts-ignore
+        req.user = { email: decoded.email, id: decoded._id }
         next();
       });
     }

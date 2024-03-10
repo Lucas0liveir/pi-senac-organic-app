@@ -9,4 +9,7 @@ export * from "./CardFormScreen"
 export * from "./ConfirmPurchaseScreen"
 export * from "./ProfileScreen"
 export * from "./SearchScreen"
+export * from "./SubsScreen"
+export * from "./ConfirmSubsScreen"
+
 export * from "./ErrorScreen/ErrorBoundary"

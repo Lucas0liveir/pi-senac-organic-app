@@ -10,6 +10,7 @@ export type UserResponseModel = {
   nome?: string;
   email: string;
   cpf?: string;
+  customerId?: string;
 };
 
 export type AddressModel = {

@@ -1,7 +1,7 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 
 export const UserStoreModel = types
-  .model("AuthenticationStore")
+  .model("UserStore")
   .props({
     email: types.maybeNull(types.string),
     senha: types.maybeNull(types.string),

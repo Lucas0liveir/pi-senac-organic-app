@@ -13,6 +13,7 @@ export const registerUser = async (req: Request, res: Response) => {
     nome: userCreated.nome,
     email: userCreated.email,
     cpf: userCreated.cpf,
+    customerId: userCreated.customerId
   };
 
   res.status(201).json({
@@ -36,6 +37,7 @@ export const getUserById = async (req: Request, res: Response) => {
     nome: user.nome,
     email: user.email,
     cpf: user.cpf,
+    customerId: user.customerId
   };
 
   res.status(200).json({
@@ -51,11 +53,14 @@ export const loginUser = async (req: Request, res: Response) => {
     throw new BadRequestError("Por favor insira email e senha válidos!");
   }
 
-  const token = await UserService.authorization(email, senha);
+  const { token, user } = await UserService.authorization(email, senha);
 
   res.status(200).json({
     status: res.statusCode,
-    token,
+    data: {
+      token,
+      user
+    }
   });
 };
 

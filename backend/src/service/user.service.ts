@@ -8,6 +8,7 @@ import { UserModel } from "../types/type";
 import UserRepository from "../repositories/user.repository";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import paymentService from "./payment.service";
 
 const secretJWT = process.env.JWT_SECRET_KEY || "";
 
@@ -31,7 +32,9 @@ class UserService {
       user.senha = await bcrypt.hash(user.senha, 10);
     }
 
-    const userEntity: IUser = { ...user };
+    const id = await paymentService.createCustomer(user.email).catch()
+
+    const userEntity: IUser = { ...user, customerId: id };
 
     return await UserRepository.create(userEntity);
   }
@@ -49,9 +52,21 @@ class UserService {
       throw new UnauthorizedError("Authentication failed!");
     }
 
-    return jwt.sign({ _id: user.id, email: user.email }, secretJWT, {
+    const token = jwt.sign({ _id: user.id, email: user.email }, secretJWT, {
       expiresIn: "1h",
-    });
+    })
+
+    return {
+      token,
+      user: {
+        id: user._id.toString(),
+        nome: user.nome,
+        email: user.email,
+        cpf: user.cpf,
+        customerId: user?.customerId,
+        endereco: user?.endereco
+      }
+    }
   }
 
   async update(userId: string, user: Partial<typeof User>) {

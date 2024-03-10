@@ -9,6 +9,7 @@ import { CardProdHorizontal } from "app/components/CardProdHorizontal"
 import { useStores } from "app/models"
 import { values } from "mobx"
 import { TouchableWithoutFeedback } from "react-native"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "app/models"
 const Cupons = [
@@ -63,9 +64,9 @@ export const CartScreen: FC<any> = observer(function CartScreen() {
             </ScrollView>
 
             <View >
-              <TouchableWithoutFeedback 
-              onPress={() => navigation.navigate("Shipping")}
-              style={{ paddingVertical: 25 }}>
+              <TouchableWithoutFeedback
+                onPress={() => navigation.navigate("Shipping")}
+                style={{ paddingVertical: 25 }}>
                 <Card wrapperStyle={{ flexDirection: "row", alignItems: "center" }} containerStyle={{ borderRadius: 25, paddingVertical: 20 }}>
                   <Icon type="feather" name="shopping-cart" />
                   <View style={{ marginLeft: 25 }}>
@@ -108,6 +109,36 @@ export const CartScreen: FC<any> = observer(function CartScreen() {
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                   <Text text="Total" />
                   <Text style={{ fontWeight: "bold" }} text={Number(cartStore.total - (cartStore.total * (discontApplyed?.descont ?? 0))).toLocaleString("pt-br", { currency: "BRL", style: "currency" })} />
+
+                </View>
+                <View
+                  style={{
+                    borderRadius: 15,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    marginTop: 2,
+                    backgroundColor: "rgba(124, 205, 124, .3)",
+                    width: "60%",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-evenly",
+                    alignSelf: "flex-end"
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="arrow-left-bottom"
+                    style={{
+                      color: colors.palette.green100,
+                    }}
+                  />
+                  <Text
+                    weight="bold"
+                    style={{
+                      fontSize: 10,
+                      color: colors.palette.green100,
+                    }}>
+                    R$ {Number(cartStore.total * 0.05).toFixed(2)} de Cashback em 30 dias
+                  </Text>
                 </View>
 
                 <View style={{ flexBasis: height / 7, marginTop: 30, justifyContent: "flex-end" }}>

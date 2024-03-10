@@ -10,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { LoginManager, Profile } from 'react-native-fbsdk-next'
 import { UserStoreModel } from "app/models/users";
+import { api } from "app/services/api";
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> { }
 
@@ -23,7 +24,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
   const {
     users,
     setUser,
-    authenticationStore: { setAuthEmail, setNome, setAuthToken },
+    authenticationStore: { setAuthEmail, setNome, setAuthToken, setProp },
   } = useStores()
 
   const facebookLogin = async () => {
@@ -35,7 +36,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       }
 
       const currentProfile = await Profile.getCurrentProfile().then(
-        function(currentProfile) {
+        function (currentProfile) {
           if (currentProfile) {
             console.log("The current logged user is: " +
               currentProfile.name
@@ -48,21 +49,21 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         }
       );
 
-     if (currentProfile) {
-      const userstored = users.find(u => u.email === "facebooklogin@email.com")
-      if (userstored) {
-        setAuthEmail("facebooklogin@email.com")
-        setNome(currentProfile.name)
-        setAuthToken(String(Date.now()))
-      } else {
-        const newuser = UserStoreModel.create({ cpf: null, email: "facebooklogin@email.com", nome: currentProfile.name, senha: null })
-        setUser(newuser)
+      if (currentProfile) {
+        const userstored = users.find(u => u.email === "facebooklogin@email.com")
+        if (userstored) {
+          setAuthEmail("facebooklogin@email.com")
+          setNome(currentProfile.name)
+          setAuthToken(String(Date.now()))
+        } else {
+          const newuser = UserStoreModel.create({ cpf: null, email: "facebooklogin@email.com", nome: currentProfile.name, senha: null })
+          setUser(newuser)
 
-        setAuthEmail("facebooklogin@email.com")
-        setNome(currentProfile.name)
-        setAuthToken(String(Date.now()))
+          setAuthEmail("facebooklogin@email.com")
+          setNome(currentProfile.name)
+          setAuthToken(String(Date.now()))
+        }
       }
-     }
 
     } catch (err) {
       console.log(err)
@@ -93,17 +94,13 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
     }
   }
 
-  function login() {
+  async function login() {
 
-    const user = users.find(u => u.email === email && u.senha === authPassword)
-
-    if (user) {
-      setAuthEmail(user.email)
-      setNome(user.nome)
-
-      setAuthToken(String(Date.now()))
-    } else {
-      Alert.alert("Atenção", "Email ou senha incorretos")
+    const res = await api.login(email, authPassword)
+    if (res.kind === "ok") {
+      const { token, user } = res
+      setProp("authToken", token)
+      setProp("user", user)
     }
   }
 

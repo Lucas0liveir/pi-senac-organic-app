@@ -1,19 +1,21 @@
 import React, { FC, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Alert, Dimensions, Pressable, ScrollView, View, ViewStyle } from "react-native"
+import { Alert, Dimensions, Pressable, ScrollView, TextInput, View, ViewStyle } from "react-native"
 import { AppStackScreenProps } from "app/navigators"
 import { AutoImage, Button, Screen, Text } from "app/components"
 import { colors, spacing } from "app/theme"
 import { Input, Icon as ThemedIcon } from "@rneui/themed"
 import { UserStoreModel } from "app/models/users"
 import { useStores } from "app/models"
+import { User, api } from "app/services/api"
+import { maskCPF } from "app/utils/maskCpf"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "app/models"
 
 interface RegisterScreenProps extends AppStackScreenProps<"Register"> { }
 
 export const RegisterScreen: FC<RegisterScreenProps> = observer(function RegisterScreen() {
-  const { users, setUser, authenticationStore: { setAuthEmail, setNome } } = useStores()
+  const { authenticationStore: { setProp } } = useStores()
   const { width } = Dimensions.get("screen")
   const [activeIndex, setActiveIndex] = useState(0)
   const scrollRef = useRef<any>();
@@ -26,18 +28,15 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
     confSenha: ""
   })
   const [address, setAddres] = useState({
-    rua: "",
+    logradouro: "",
     numero: "",
     bairro: "",
     cidade: "",
     cep: "",
     estado: ""
   })
-  // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
 
-  // Pull in navigation via hook
-  // const navigation = useNavigation()
+  const inputRefs = useRef<TextInput[]>([]);
 
   const handlePress = (targetIndex: number) => {
     setActiveIndex(targetIndex)
@@ -47,8 +46,6 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
   const onMomentumScrollEnd = (e: any) => {
     const { nativeEvent } = e;
     const index = Math.round(nativeEvent.contentOffset.x / ((100 / 100) * width));
-
-    console.log(index);
 
     if (index !== activeIndex) setActiveIndex(index)
   }
@@ -63,10 +60,10 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
     handlePress(1)
   }
 
-  const concluir = () => {
+  const concluir = async () => {
 
     const { cpf, email, senha, nome, confSenha } = person
-    const userExists = users.find(u => u.email === email)
+
     if (!Object.values(address).every(v => v.length)) {
       Alert.alert("Atenção", "Preencha todos os campos")
       return
@@ -82,16 +79,27 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
       return
     }
 
-    if (userExists) {
-      Alert.alert("Atenção", "Endereço de email já cadastrado")
-      return
+    const payload = Object.entries(person)
+      .filter(p => p[0] !== "confSenha")
+      .reduce((acc, [chave, valor]) => {
+        acc[chave] = valor;
+        return acc;
+      }, {} as User);
+
+    const response = await api.registerUser(payload)
+
+    if (response.kind === "ok") {
+      const res = await api.login(person.email, person.senha)
+      if (res.kind === "ok") {
+        const { token, user } = res
+        console.log(user);
+
+        await api.registerAddress(user.id, address, token);
+        setProp("authToken", token)
+        setProp("user", user)
+      }
     }
 
-    const user = UserStoreModel.create({ cpf, email, nome, senha })
-    setUser(user)
-
-    setNome(nome)
-    setAuthEmail(email)
   }
 
   return (
@@ -143,7 +151,7 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
             <Input
               value={person.cpf}
               maxLength={50}
-              onChangeText={(v) => setPerson(prev => ({ ...prev, cpf: v }))}
+              onChangeText={(v) => setPerson(prev => ({ ...prev, cpf: maskCPF(v) }))}
               placeholder="CPF"
               leftIcon={
                 <ThemedIcon
@@ -220,9 +228,11 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
           <View style={{ width: (100 / 100) * width, flex: 1, paddingHorizontal: spacing.lg }}>
             <View style={{ flexDirection: "row", width: "100%" }}>
               <Input
-                value={address.rua}
-                onChangeText={(v) => setAddres(prev => ({ ...prev, rua: v }))}
+                ref={ref => inputRefs.current[0] = ref}
+                value={address.logradouro}
+                onChangeText={(v) => setAddres(prev => ({ ...prev, logradouro: v }))}
                 containerStyle={{ width: "65%" }}
+                onSubmitEditing={() => inputRefs.current[1].focus()}
                 placeholder="Rua"
                 leftIcon={
                   <ThemedIcon
@@ -233,16 +243,20 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
                 }
               />
               <Input
+                ref={ref => inputRefs.current[1] = ref}
                 value={address.numero}
                 onChangeText={(v) => setAddres(prev => ({ ...prev, numero: v }))}
                 containerStyle={{ width: "35%" }}
+                onSubmitEditing={() => inputRefs.current[2].focus()}
                 placeholder="Nº"
               />
             </View>
             <Input
+              ref={ref => inputRefs.current[2] = ref}
               value={address.bairro}
               onChangeText={(v) => setAddres(prev => ({ ...prev, bairro: v }))}
               placeholder="Bairro"
+              onSubmitEditing={() => inputRefs.current[3].focus()}
               leftIcon={
                 <ThemedIcon
                   name='home-city-outline'
@@ -252,8 +266,10 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
               }
             />
             <Input
+              ref={ref => inputRefs.current[3] = ref}
               value={address.cidade}
               onChangeText={(v) => setAddres(prev => ({ ...prev, cidade: v }))}
+              onSubmitEditing={() => inputRefs.current[4].focus()}
               placeholder="Cidade"
               leftIcon={
                 <ThemedIcon
@@ -265,7 +281,9 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
             />
             <View style={{ flexDirection: "row", width: "100%" }}>
               <Input
+                ref={ref => inputRefs.current[4] = ref}
                 value={address.cep}
+                onSubmitEditing={() => inputRefs.current[5].focus()}
                 onChangeText={(v) => setAddres(prev => ({ ...prev, cep: v }))}
                 containerStyle={{ width: "65%" }}
                 placeholder="CEP"
@@ -278,6 +296,7 @@ export const RegisterScreen: FC<RegisterScreenProps> = observer(function Registe
                 }
               />
               <Input
+                ref={ref => inputRefs.current[5] = ref}
                 value={address.estado}
                 onChangeText={(v) => setAddres(prev => ({ ...prev, estado: v }))}
                 containerStyle={{ width: "35%" }}

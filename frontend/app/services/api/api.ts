@@ -13,10 +13,12 @@ import {
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
 import type {
+  AddressModel,
   ApiConfig,
-  ApiFeedResponse, // @demo remove-current-line
+  ApiFeedResponse,
+  ApiUserResponse,
+  User, // @demo remove-current-line
 } from "./api.types"
-import type { EpisodeSnapshotIn } from "../../models/Episode" // @demo remove-current-line
 
 /**
  * Configuring the apisauce instance.
@@ -52,7 +54,7 @@ export class Api {
   /**
    * Gets a list of recent React Native Radio episodes.
    */
-  async getEpisodes(): Promise<{ kind: "ok"; episodes: EpisodeSnapshotIn[] } | GeneralApiProblem> {
+  async getEpisodes(): Promise<{ kind: "ok"; episodes: any[] } | GeneralApiProblem> {
     // make the api call
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
       `api.json?rss_url=https%3A%2F%2Ffeeds.simplecast.com%2FhEI_f9Dx`,
@@ -69,7 +71,7 @@ export class Api {
       const rawData = response.data
 
       // This is where we transform the data into the shape we expect for our MST model.
-      const episodes: EpisodeSnapshotIn[] = rawData.items.map((raw) => ({
+      const episodes: any[] = rawData.items.map((raw) => ({
         ...raw,
       }))
 
@@ -82,7 +84,150 @@ export class Api {
     }
   }
   // @demo remove-block-end
+
+  async registerUser(payload: User): Promise<{ kind: "ok"; user: ApiUserResponse } | GeneralApiProblem> {
+
+    const response: ApiResponse<ApiUserResponse> = await this.apisauce.post(`register`, payload)
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    try {
+
+      const rawData = response.data
+
+      const user = rawData
+
+      return { kind: "ok", user }
+
+    } catch (e) {
+      if (__DEV__) {
+        console.tron.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
+  }
+
+  async registerAddress(userId: string, payload: AddressModel, token: string) {
+
+    const response: ApiResponse<ApiUserResponse> = await this.apisauce.post(`user/${userId}/address`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    try {
+
+      const rawData = response.data
+
+      const user = rawData
+
+      return { kind: "ok", user }
+
+    } catch (e) {
+      if (__DEV__) {
+        console.tron.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
+  }
+
+  async login(email: string, senha: string): Promise<{ kind: "ok"; user: ApiUserResponse, token: string } | GeneralApiProblem> {
+
+    const response: ApiResponse<{ data: { user: ApiUserResponse, token: string } }> = await this.apisauce.post(`login`, { email, senha })
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    try {
+
+      const rawData = response.data
+
+      const user = rawData.data
+
+      return { kind: "ok", ...user }
+
+    } catch (e) {
+      if (__DEV__) {
+        console.tron.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
+  }
+
+  async createPayment(customerId: string, amount: string, token: string): Promise<{ kind: "ok"; payment: { ephemeralkey: string, paymentIntent: string } } | GeneralApiProblem> {
+
+    const response: ApiResponse<{ data: { ephemeralkey: string, paymentIntent: string } }> = await this.apisauce.post(`payment/${customerId}`, { amount }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    try {
+
+      const rawData = response.data
+
+      const payment = rawData.data
+      console.log(payment);
+
+
+      return { kind: "ok", payment }
+
+    } catch (e) {
+      if (__DEV__) {
+        console.tron.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
+  }
+
+  async createSubs(customerId: string, token: string): Promise<{ kind: "ok"; payment: { ephemeralkey: string, paymentIntent: string } } | GeneralApiProblem> {
+
+    const response: ApiResponse<{ data: { ephemeralkey: string, paymentIntent: string } }> = await this.apisauce.post(`subscription/${customerId}`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    try {
+
+      const rawData = response.data
+
+      const payment = rawData.data
+
+
+      return { kind: "ok", payment }
+
+    } catch (e) {
+      if (__DEV__) {
+        console.tron.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
+  }
+
 }
+
+
 
 // Singleton instance of the API for convenience
 export const api = new Api()

@@ -5,6 +5,7 @@ export interface IUser {
   senha: string;
   nome: string;
   cpf: string;
+  customerId?: string;
   endereco?: IAddress;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -48,6 +49,11 @@ export const UserSchema = new Schema<IUser>(
     nome: {
       type: String,
       required: [true, "Nome is a required field"],
+    },
+    customerId: {
+      type: String,
+      required: false,
+      unique: true,
     },
     cpf: {
       type: String,

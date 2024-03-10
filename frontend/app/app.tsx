@@ -30,7 +30,7 @@ import { customFontsToLoad } from "./theme"
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-
+import { StripeProvider } from '@stripe/stripe-react-native';
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 // Web linking configuration
@@ -99,18 +99,24 @@ function App(props: AppProps) {
 
   // otherwise, we're ready to render the app
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <ErrorBoundary catchErrors={Config.catchErrors}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AppNavigator
-            linking={linking}
-            //initialState={initialNavigationState}
-            onStateChange={onNavigationStateChange}
-          />
-        </GestureHandlerRootView>
+    <StripeProvider
+      publishableKey="pk_test_51NagwlGiMV6RYH8nWtvLxO8QWfZNXJ7muDVkIbJ3wXLe8NgY8n0FcahqlfYU0pgKx0QnQEkoisdQNhilhdwJBP1b00HnOjqDTp"
+      urlScheme="organic" // required for 3D Secure and bank redirects
+      merchantIdentifier="merchant.com.{{Organic}}" // required for Apple Pay
+    >
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <ErrorBoundary catchErrors={Config.catchErrors}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AppNavigator
+              linking={linking}
+              //initialState={initialNavigationState}
+              onStateChange={onNavigationStateChange}
+            />
+          </GestureHandlerRootView>
 
-      </ErrorBoundary>
-    </SafeAreaProvider>
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </StripeProvider>
   )
 }
 

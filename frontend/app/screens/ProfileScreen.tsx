@@ -6,10 +6,10 @@ import { colors } from "app/theme"
 import { Divider, Icon } from "@rneui/themed"
 import { useStores } from "app/models"
 import { Directions, FlatList, FlingGestureHandler, State } from "react-native-gesture-handler"
-
+import AntDesign from "react-native-vector-icons/AntDesign"
 
 export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
-  const { authenticationStore: { authEmail, nome }, ordersStoreModel } = useStores()
+  const { authenticationStore: { authEmail, nome, user, cashBack }, ordersStoreModel } = useStores()
   const { width } = Dimensions.get("window")
   const [i, setIndex] = useState(0)
 
@@ -34,10 +34,38 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
       <View style={{ height: "70%", backgroundColor: colors.palette.green100, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
         <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
           <Icon type="font-awesome-5" name="user-circle" size={128} />
-          <Text style={{ fontSize: 24, color: "#000", marginTop: 10 }} weight="bold" text={nome} />
-          <Text style={{ fontSize: 12, color: "#000" }} weight="light" text={authEmail} />
+          <Text style={{ fontSize: 24, color: "#000", marginTop: 10 }} weight="bold" text={user.nome} />
+          <Text style={{ fontSize: 12, color: "#000" }} weight="light" text={user.email} />
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4
+          }}>
+            <Text>
+              Cashback
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2
+              }}
+            >
+
+              <Text>
+                {Number(cashBack ?? 0).toLocaleString("pt-br", { currency: "BRL", style: "currency" })}
+              </Text>
+              <AntDesign
+                size={10}
+                name="clockcircleo"
+              />
+            </View>
+          </View>
         </View>
+
       </View>
+
       <FlatList
         data={ordersStoreModel?.list ?? []}
         keyExtractor={(_, index) => String(index)}

@@ -42,6 +42,8 @@ export type AppStackParamList = {
   Payment: undefined
   AddCard: undefined
   ConfirmPurchase: undefined
+  Subs: undefined
+  ConfirmSubsScreen: undefined
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -76,9 +78,11 @@ const AppStack = observer(function AppStack() {
         <>
           <Stack.Screen name="Tabs" component={MyTabs} />
           <Stack.Screen name="Shipping" component={Screens.ShippingScreen} />
+          <Stack.Screen name="Subs" component={Screens.SubsScreen} />
           <Stack.Screen name="Payment" component={Screens.PaymentScreen} />
           <Stack.Screen name="AddCard" component={Screens.CardFormScreen} />
           <Stack.Screen name="ConfirmPurchase" component={Screens.ConfirmPurchaseScreen} />
+          <Stack.Screen name="ConfirmSubsScreen" component={Screens.ConfirmSubsScreen} />
         </>
       ) : (
         <>
