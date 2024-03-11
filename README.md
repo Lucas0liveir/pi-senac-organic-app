@@ -22,6 +22,7 @@ Aplicativo para conectar as cooperativas de produtores de alimentos orgânicos d
 + Consumidor
 + Ferramentas utilizadas no projeto
 + Como executar o projeto
++ Assinatura de Produtos
 
 ### Para baixar o aplicativo Organic
 + Procure o aplicativo Organic  na Google Play Store. Toque em INSTALAR.
@@ -68,6 +69,14 @@ Aplicativo para conectar as cooperativas de produtores de alimentos orgânicos d
 
 ![c64b3ff5-6a21-4f3e-9a91-ea3e4ee3ac75](https://github.com/neodamico/senac_pti/assets/143230275/cd594869-b90d-4afc-93d8-4b8adbdbfd16)
 
+### Assinatura de produtos
++ Após o pedido ser efetuado pela primeira vez, o aplicativo irá apresentar a tela oferecendo a assinatura
++ Com a Assinatura o consumidor poderá receber a mesma remessa comprada a cada 15 (Quinzenal) ou a cada 30 dias (mensal)
++ Caso escolha pela assinatura o valor será lançado no cartão de crédito, dois dias antes do novo pedido
++ O pedido pode ser cancelado ate 24 horas da entrega programada
+  
+ ![assinatura](https://github.com/neodamico/senac_pti/blob/main/Imagens%20para%20aplicativo%20Organics/assinatura.png)
+
 ### Download do apk
 [v1.0.0](https://github.com/Lucas0liveir/pi-senac-organic-app/releases/tag/release)
 
@@ -77,6 +86,9 @@ Aplicativo para conectar as cooperativas de produtores de alimentos orgânicos d
 - [Mobx State Tree](https://mobx-state-tree.js.org/)
 - [Google Maps](https://maps.google.com/)
 - [Google Geo Location](https://developers.google.com/maps/documentation/geolocation/overview)
+- [React Native Stripe sdk](https://docs.stripe.com/libraries/react-native)
+- [Javascript](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript)
+- [MongoDB](https://www.mongodb.com/pt-br)
   
 ### Como executar o projeto 
   [Prepare o ambiente do React Native](https://reactnative.dev/docs/environment-setup)
